@@ -3,11 +3,12 @@ import { Suspense } from "react";
 import { MonthPicker } from "@/components/MonthPicker";
 import { Skeleton } from "@/components/Skeleton";
 import { signOut } from "@/features/auth/actions";
-import { CategoryBreakdown } from "@/features/dashboard/components/CategoryBreakdown";
+import { BudgetDonut } from "@/features/budgets/components/BudgetDonut";
 import { MonthSummary } from "@/features/dashboard/components/MonthSummary";
 import { getMonthSummary } from "@/features/dashboard/queries";
 import { TransactionItem } from "@/features/transactions/components/TransactionItem";
-import { parseMonth } from "@/lib/dates";
+import { requestMonth } from "@/lib/dates";
+import { formatMoney } from "@/lib/format";
 
 export default function DashboardPage({ searchParams }: PageProps<"/">) {
   return (
@@ -26,14 +27,56 @@ export default function DashboardPage({ searchParams }: PageProps<"/">) {
 }
 
 async function Dashboard({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
-  const month = parseMonth((await searchParams).mes);
+  const month = await requestMonth(searchParams);
   const summary = await getMonthSummary(month);
 
   return (
     <>
       <MonthPicker month={month} basePath="/" />
       <MonthSummary {...summary} />
-      <CategoryBreakdown rows={summary.expensesByCategory} />
+
+      <section className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <h2 className="font-medium">Presupuestos del mes</h2>
+          <Link href="/presupuestos" className="text-sm text-accent">
+            Configurar
+          </Link>
+        </div>
+        {summary.budgets.length === 0 ? (
+          <Link href="/presupuestos" className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">
+            Aún no tienes presupuestos. Toca aquí para asignar un límite mensual a tus categorías.
+          </Link>
+        ) : (
+          <div className="grid grid-cols-2 gap-2">
+            {summary.budgets.map((b) => (
+              <BudgetDonut key={b.category.id} {...b} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {(summary.unbudgeted.length > 0 || summary.uncategorized > 0) && (
+        <section className="rounded-xl bg-surface p-4">
+          <h2 className="mb-2 font-medium">Gastos sin presupuesto</h2>
+          <ul className="flex flex-col gap-1 text-sm">
+            {summary.unbudgeted.map(({ category, spent }) => (
+              <li key={category.id} className="flex justify-between">
+                <span>
+                  {category.icon} {category.name}
+                </span>
+                <span className="tabular-nums text-muted">{formatMoney(spent)}</span>
+              </li>
+            ))}
+            {summary.uncategorized > 0 && (
+              <li className="flex justify-between">
+                <span>❔ Sin categoría</span>
+                <span className="tabular-nums text-muted">{formatMoney(summary.uncategorized)}</span>
+              </li>
+            )}
+          </ul>
+        </section>
+      )}
+
       <section className="rounded-xl bg-surface px-4 pt-4">
         <div className="flex items-center justify-between">
           <h2 className="font-medium">Últimos movimientos</h2>

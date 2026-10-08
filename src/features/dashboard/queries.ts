@@ -1,36 +1,33 @@
 import "server-only";
+import { getBudgetProgress } from "@/features/budgets/queries";
+import { getMonthSavings } from "@/features/savings/queries";
 import { getMonthTransactions } from "@/features/transactions/queries";
 
 export async function getMonthSummary(month: string) {
-  const transactions = await getMonthTransactions(month);
+  const [transactions, budgets, saved] = await Promise.all([
+    getMonthTransactions(month),
+    getBudgetProgress(month),
+    getMonthSavings(month),
+  ]);
 
   let income = 0;
   let expense = 0;
-  const byCategory = new Map<string, { name: string; icon: string; color: string; total: number }>();
-
   for (const t of transactions) {
-    const amount = Number(t.amount);
-    if (t.kind === "income") {
-      income += amount;
-      continue;
-    }
-    expense += amount;
-    const key = t.category?.id ?? "none";
-    const entry = byCategory.get(key) ?? {
-      name: t.category?.name ?? "Sin categoría",
-      icon: t.category?.icon ?? "❔",
-      color: t.category?.color ?? "#94a3b8",
-      total: 0,
-    };
-    entry.total += amount;
-    byCategory.set(key, entry);
+    if (t.kind === "income") income += Number(t.amount);
+    else expense += Number(t.amount);
   }
 
   return {
     income,
     expense,
-    balance: income - expense,
-    expensesByCategory: [...byCategory.values()].sort((a, b) => b.total - a.total),
+    saved,
+    available: income - expense - saved,
+    budgets: budgets.filter((b) => b.limit !== null) as ((typeof budgets)[number] & { limit: number })[],
+    // Categorías sin presupuesto en las que sí hubo gasto este mes.
+    unbudgeted: budgets.filter((b) => b.limit === null && b.spent > 0).sort((a, b) => b.spent - a.spent),
+    uncategorized: transactions
+      .filter((t) => t.kind === "expense" && !t.category_id)
+      .reduce((s, t) => s + Number(t.amount), 0),
     recent: transactions.slice(0, 5),
   };
 }

@@ -1,18 +1,14 @@
 import "server-only";
-import { requireUser } from "@/lib/supabase/server";
-import { getCategories, getMonthTransactions } from "@/features/transactions/queries";
+import { getCategories } from "@/features/categories/queries";
+import { getMonthTransactions } from "@/features/transactions/queries";
 
-/** Por cada categoría de gasto: límite del mes (si existe) y lo gastado. */
+/**
+ * Por cada categoría de gasto: su presupuesto mensual (si tiene) y lo gastado
+ * en `month`. El presupuesto es fijo; lo gastado se reinicia cada mes.
+ */
 export async function getBudgetProgress(month: string) {
-  const { supabase } = await requireUser();
-  const [categories, transactions, budgetsResult] = await Promise.all([
-    getCategories("expense"),
-    getMonthTransactions(month),
-    supabase.from("budgets").select("category_id, amount").eq("month", `${month}-01`),
-  ]);
-  if (budgetsResult.error) throw budgetsResult.error;
+  const [categories, transactions] = await Promise.all([getCategories("expense"), getMonthTransactions(month)]);
 
-  const limits = new Map(budgetsResult.data.map((b) => [b.category_id, Number(b.amount)]));
   const spent = new Map<string, number>();
   for (const t of transactions) {
     if (t.kind === "expense" && t.category_id) {
@@ -22,7 +18,7 @@ export async function getBudgetProgress(month: string) {
 
   return categories.map((category) => ({
     category,
-    limit: limits.get(category.id) ?? null,
+    limit: category.monthly_budget === null ? null : Number(category.monthly_budget),
     spent: spent.get(category.id) ?? 0,
   }));
 }

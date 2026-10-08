@@ -3,7 +3,7 @@ import { MonthPicker } from "@/components/MonthPicker";
 import { Skeleton } from "@/components/Skeleton";
 import { TransactionList } from "@/features/transactions/components/TransactionList";
 import { getMonthTransactions } from "@/features/transactions/queries";
-import { parseMonth } from "@/lib/dates";
+import { requestMonth } from "@/lib/dates";
 
 export default function MovimientosPage({ searchParams }: PageProps<"/movimientos">) {
   return (
@@ -17,7 +17,7 @@ export default function MovimientosPage({ searchParams }: PageProps<"/movimiento
 }
 
 async function Movimientos({ searchParams }: Pick<PageProps<"/movimientos">, "searchParams">) {
-  const month = parseMonth((await searchParams).mes);
+  const month = await requestMonth(searchParams);
   const transactions = await getMonthTransactions(month);
 
   return (

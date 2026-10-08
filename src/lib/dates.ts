@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import { TIMEZONE } from "./config";
 
 /** Fecha de hoy (YYYY-MM-DD) en la zona horaria de la app, no la del servidor. */
@@ -13,6 +14,13 @@ export function currentMonth() {
 /** Valida un "YYYY-MM" que viene de la URL; si no es válido usa el mes actual. */
 export function parseMonth(value: string | string[] | undefined) {
   return typeof value === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(value) ? value : currentMonth();
+}
+
+/** Mes pedido en `?mes=`, o el actual. Marca la petición como dinámica (usa la fecha de hoy). */
+export async function requestMonth(searchParams: Promise<Record<string, string | string[] | undefined>>) {
+  const { mes } = await searchParams;
+  await connection();
+  return parseMonth(mes);
 }
 
 /** Rango [start, end) de fechas ISO para filtrar un mes. */

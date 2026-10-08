@@ -2,9 +2,13 @@ import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import type { Database } from "./database.types";
 
 export async function createClient() {
+  // Todo lo que pasa por Supabase depende del usuario y de la hora (expiración
+  // de la sesión, "hoy"), así que nunca se pre-renderiza.
+  await connection();
   const cookieStore = await cookies();
 
   return createServerClient<Database>(

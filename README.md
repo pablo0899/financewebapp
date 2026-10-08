@@ -9,10 +9,11 @@ teléfono como PWA ("Agregar a pantalla de inicio") y guarda los datos en Supaba
 
 | Módulo | Ruta | Qué hace |
 | --- | --- | --- |
-| Dashboard | `/` | Balance del mes, ingresos vs gastos, gasto por categoría y últimos movimientos |
+| Inicio | `/` | Disponible del mes (ingresos − gastos − ahorro), un anillo por categoría con presupuesto (gastado vs. restante), gastos sin presupuesto y últimos movimientos |
 | Movimientos | `/movimientos` | Lista por mes agrupada por día; borrar movimientos |
-| Nuevo movimiento | `/movimientos/nuevo` | Captura rápida: monto, gasto/ingreso, categoría, fecha y nota |
-| Presupuestos | `/presupuestos` | Límite mensual por categoría con barra de avance |
+| Nuevo movimiento | `/movimientos/nuevo` | Monto, gasto/ingreso, categoría y fecha (obligatorias) y nota |
+| Presupuestos | `/presupuestos` | Límite mensual fijo por categoría (lo gastado se reinicia cada mes); crear y borrar categorías |
+| Ahorro | `/ahorro` | Metas de ahorro con objetivo opcional; aportar y retirar; total ahorrado y ahorro del mes |
 | Login | `/login` | Acceso con correo y contraseña (sin registro público) |
 
 Todas las vistas mensuales aceptan `?mes=YYYY-MM`.
@@ -35,10 +36,12 @@ src/
       presupuestos/
   features/                   # Lógica por módulo
     auth/          actions.ts, components/
+    categories/    queries.ts, actions.ts (incluye presupuesto), components/
     transactions/  queries.ts, actions.ts, components/
-    budgets/       queries.ts, actions.ts, components/
+    budgets/       queries.ts (avance del mes), components/
+    savings/       queries.ts, actions.ts, components/
     dashboard/     queries.ts, components/
-  components/                 # UI compartida (BottomNav, MonthPicker, ProgressBar…)
+  components/                 # UI compartida (BottomNav, Donut, MonthPicker, ProgressBar…)
   lib/
     supabase/                 # Clientes server/proxy y tipos de la BD
     config.ts                 # Moneda, locale y zona horaria
@@ -54,8 +57,8 @@ solo componen piezas de `features/`.
 ### 1. Supabase
 
 1. Crea un proyecto en [supabase.com](https://supabase.com) (el plan gratis alcanza).
-2. Ejecuta la migración: abre **SQL Editor**, pega el contenido de
-   `supabase/migrations/20261007000000_init.sql` y córrelo
+2. Ejecuta las migraciones de `supabase/migrations/` en orden: abre **SQL Editor**,
+   pega el contenido de cada archivo y córrelo
    (o con la CLI: `npx supabase link` y `npx supabase db push`).
 3. **Authentication → Users → Add user → Create new user**: crea tu usuario con
    correo y contraseña y marca **Auto Confirm User**. Al crearse se generan sus
