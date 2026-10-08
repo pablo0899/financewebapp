@@ -13,7 +13,7 @@ teléfono como PWA ("Agregar a pantalla de inicio") y guarda los datos en Supaba
 | Movimientos | `/movimientos` | Lista por mes agrupada por día; borrar movimientos |
 | Nuevo movimiento | `/movimientos/nuevo` | Captura rápida: monto, gasto/ingreso, categoría, fecha y nota |
 | Presupuestos | `/presupuestos` | Límite mensual por categoría con barra de avance |
-| Login | `/login` | Acceso sin contraseña con código de 6 dígitos por correo |
+| Login | `/login` | Acceso con correo y contraseña (sin registro público) |
 
 Todas las vistas mensuales aceptan `?mes=YYYY-MM`.
 
@@ -57,15 +57,11 @@ solo componen piezas de `features/`.
 2. Ejecuta la migración: abre **SQL Editor**, pega el contenido de
    `supabase/migrations/20261007000000_init.sql` y córrelo
    (o con la CLI: `npx supabase link` y `npx supabase db push`).
-3. **Authentication → Email Templates → Magic Link**: cambia el cuerpo para que
-   envíe el código en vez del link, por ejemplo:
-   ```html
-   <h2>Tu código para entrar</h2>
-   <p style="font-size:24px"><b>{{ .Token }}</b></p>
-   ```
-   (Se usa código y no link porque en iOS el link abre Safari, no la app instalada.)
-4. Opcional: en **Authentication → Sign In / Providers** desactiva "Allow new users to sign up"
-   después de crear tu cuenta, para que nadie más pueda registrarse.
+3. **Authentication → Users → Add user → Create new user**: crea tu usuario con
+   correo y contraseña y marca **Auto Confirm User**. Al crearse se generan sus
+   categorías por defecto.
+4. **Authentication → Sign In / Providers**: desactiva **Allow new users to sign up**
+   para que nadie más pueda registrarse (la app no tiene pantalla de registro).
 
 ### 2. Variables de entorno
 

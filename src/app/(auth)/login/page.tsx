@@ -8,7 +8,7 @@ export default function LoginPage() {
           $
         </div>
         <h1 className="text-2xl font-semibold">Mis finanzas</h1>
-        <p className="text-muted">Entra con tu correo, sin contraseña.</p>
+        <p className="text-muted">Entra con tu correo y contraseña.</p>
       </div>
       <LoginForm />
     </main>
