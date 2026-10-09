@@ -6,13 +6,20 @@ import { usePathname } from "next/navigation";
 const TABS = [
   { href: "/", label: "Inicio", icon: "🏠" },
   { href: "/movimientos", label: "Movimientos", icon: "📋" },
+  { href: "/cuentas", label: "Cuentas", icon: "💳" },
   { href: "/presupuestos", label: "Presupuestos", icon: "🎯" },
-  { href: "/ahorro", label: "Ahorro", icon: "🐷" },
 ] as const;
 
+/** Navegación inferior con la pestaña activa según la URL. */
 export function BottomNav() {
-  const pathname = usePathname();
+  return <NavBar pathname={usePathname()} />;
+}
 
+/**
+ * La barra en sí. En rutas dinámicas la URL solo se conoce al pedir la página,
+ * así que el layout la muestra sin pestaña activa (pathname="") mientras carga.
+ */
+export function NavBar({ pathname }: { pathname: string }) {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
       <div className="mx-auto flex max-w-md items-center px-1">

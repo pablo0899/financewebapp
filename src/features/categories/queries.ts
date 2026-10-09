@@ -1,9 +1,9 @@
 import "server-only";
 import { cache } from "react";
 import { requireUser } from "@/lib/supabase/server";
-import type { MovementKind } from "@/lib/supabase/database.types";
+import type { CategoryKind } from "@/lib/supabase/database.types";
 
-export const getCategories = cache(async (kind?: MovementKind) => {
+export const getCategories = cache(async (kind?: CategoryKind) => {
   const { supabase } = await requireUser();
   let query = supabase.from("categories").select("*").order("name");
   if (kind) query = query.eq("kind", kind);

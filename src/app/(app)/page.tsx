@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import { MonthPicker } from "@/components/MonthPicker";
 import { Skeleton } from "@/components/Skeleton";
 import { signOut } from "@/features/auth/actions";
+import { AccountsSummary } from "@/features/accounts/components/AccountsSummary";
+import { getAccountsOverview } from "@/features/accounts/queries";
 import { BudgetDonut } from "@/features/budgets/components/BudgetDonut";
 import { MonthSummary } from "@/features/dashboard/components/MonthSummary";
 import { getMonthSummary } from "@/features/dashboard/queries";
@@ -28,10 +30,17 @@ export default function DashboardPage({ searchParams }: PageProps<"/">) {
 
 async function Dashboard({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
   const month = await requestMonth(searchParams);
-  const summary = await getMonthSummary(month);
+  const [summary, accounts] = await Promise.all([getMonthSummary(month), getAccountsOverview()]);
 
   return (
     <>
+      {accounts.items.length > 0 ? (
+        <AccountsSummary liquidity={accounts.liquidity} debt={accounts.debt} net={accounts.net} href="/cuentas" />
+      ) : (
+        <Link href="/cuentas" className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted">
+          Da de alta tus cuentas y tarjetas para ver tu saldo real.
+        </Link>
+      )}
       <MonthPicker month={month} basePath="/" />
       <MonthSummary {...summary} />
 

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { formatMoney } from "@/lib/format";
 
 type Props = { income: number; expense: number; saved: number; available: number };
@@ -10,7 +11,9 @@ export function MonthSummary({ income, expense, saved, available }: Props) {
       <div className="grid grid-cols-3 gap-2 text-sm">
         <Stat label="Ingresos" value={income} />
         <Stat label="Gastos" value={expense} />
-        <Stat label="Ahorro" value={saved} />
+        <Link href="/ahorro">
+          <Stat label="Ahorro ›" value={saved} />
+        </Link>
       </div>
     </div>
   );

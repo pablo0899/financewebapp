@@ -6,6 +6,11 @@ export function today() {
   return new Intl.DateTimeFormat("en-CA", { timeZone: TIMEZONE }).format(new Date());
 }
 
+/** Fecha local (YYYY-MM-DD) de un timestamp, en la zona horaria de la app. */
+export function toLocalDate(timestamp: string) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: TIMEZONE }).format(new Date(timestamp));
+}
+
 /** Mes actual como "YYYY-MM". */
 export function currentMonth() {
   return today().slice(0, 7);

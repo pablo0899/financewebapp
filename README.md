@@ -9,14 +9,27 @@ teléfono como PWA ("Agregar a pantalla de inicio") y guarda los datos en Supaba
 
 | Módulo | Ruta | Qué hace |
 | --- | --- | --- |
-| Inicio | `/` | Disponible del mes (ingresos − gastos − ahorro), un anillo por categoría con presupuesto (gastado vs. restante), gastos sin presupuesto y últimos movimientos |
-| Movimientos | `/movimientos` | Lista por mes agrupada por día; borrar movimientos |
-| Nuevo movimiento | `/movimientos/nuevo` | Monto, gasto/ingreso, categoría y fecha (obligatorias) y nota |
+| Inicio | `/` | Liquidez, deuda en tarjetas y saldo real; disponible del mes (ingresos − gastos − ahorro); un anillo por categoría con presupuesto; gastos sin presupuesto y últimos movimientos |
+| Cuentas | `/cuentas`, `/cuentas/[id]` | Débito, tarjetas de crédito y cuentas con rendimiento. Saldo de cada una; en tarjetas, cuánto pagar para no generar intereses y cuándo; en rendimiento, estimado diario con interés compuesto. "Ajustar saldo" para cuadrar con el saldo real |
+| Movimientos | `/movimientos` | Lista por mes agrupada por día; cambiar la cuenta de cada movimiento; borrar |
+| Nuevo movimiento | `/movimientos/nuevo` | Gasto, ingreso o transferencia (ej. pagar la tarjeta). Monto, cuenta, categoría y fecha obligatorias |
 | Presupuestos | `/presupuestos` | Límite mensual fijo por categoría (lo gastado se reinicia cada mes); crear y borrar categorías |
 | Ahorro | `/ahorro` | Metas de ahorro con objetivo opcional; aportar y retirar; total ahorrado y ahorro del mes |
 | Login | `/login` | Acceso con correo y contraseña (sin registro público) |
 
 Todas las vistas mensuales aceptan `?mes=YYYY-MM`.
+
+### Cómo se calculan los saldos
+
+- Signo "de activo": positivo = dinero disponible, negativo = deuda (tarjetas).
+- Saldo = saldo inicial + movimientos **registrados después** de dar de alta la cuenta
+  (`opening_at`). Lo anterior ya está incluido en el saldo inicial.
+- Un gasto con tarjeta sube la deuda; pagar la tarjeta es una **transferencia** (no es gasto).
+- Cuentas con rendimiento: interés compuesto diario (`tasa / 365`) sobre el saldo de cierre
+  de cada día, desde el último ajuste. "Ajustar saldo" registra la diferencia contra el
+  saldo real y reinicia la estimación.
+- Tarjetas: "para no generar intereses" = deuda actual − compras posteriores al último corte.
+- Lógica pura en `src/features/accounts/balances.ts`.
 
 ## Estructura
 
@@ -35,6 +48,7 @@ src/
       movimientos/            # Lista + nuevo
       presupuestos/
   features/                   # Lógica por módulo
+    accounts/      balances.ts (cálculos puros), queries.ts, actions.ts, components/
     auth/          actions.ts, components/
     categories/    queries.ts, actions.ts (incluye presupuesto), components/
     transactions/  queries.ts, actions.ts, components/

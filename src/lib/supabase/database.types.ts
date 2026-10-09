@@ -9,6 +9,54 @@ export type Database = {
   };
   public: {
     Tables: {
+      accounts: {
+        Row: {
+          annual_rate: number | null;
+          color: string;
+          created_at: string;
+          credit_limit: number | null;
+          due_day: number | null;
+          icon: string;
+          id: string;
+          kind: Database["public"]["Enums"]["account_kind"];
+          name: string;
+          opening_at: string;
+          opening_balance: number;
+          statement_day: number | null;
+          user_id: string;
+        };
+        Insert: {
+          annual_rate?: number | null;
+          color?: string;
+          created_at?: string;
+          credit_limit?: number | null;
+          due_day?: number | null;
+          icon?: string;
+          id?: string;
+          kind: Database["public"]["Enums"]["account_kind"];
+          name: string;
+          opening_at?: string;
+          opening_balance?: number;
+          statement_day?: number | null;
+          user_id?: string;
+        };
+        Update: {
+          annual_rate?: number | null;
+          color?: string;
+          created_at?: string;
+          credit_limit?: number | null;
+          due_day?: number | null;
+          icon?: string;
+          id?: string;
+          kind?: Database["public"]["Enums"]["account_kind"];
+          name?: string;
+          opening_at?: string;
+          opening_balance?: number;
+          statement_day?: number | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       categories: {
         Row: {
           color: string;
@@ -112,6 +160,7 @@ export type Database = {
       };
       transactions: {
         Row: {
+          account_id: string | null;
           amount: number;
           category_id: string | null;
           created_at: string;
@@ -119,9 +168,11 @@ export type Database = {
           kind: Database["public"]["Enums"]["movement_kind"];
           note: string | null;
           occurred_on: string;
+          to_account_id: string | null;
           user_id: string;
         };
         Insert: {
+          account_id?: string | null;
           amount: number;
           category_id?: string | null;
           created_at?: string;
@@ -129,9 +180,11 @@ export type Database = {
           kind: Database["public"]["Enums"]["movement_kind"];
           note?: string | null;
           occurred_on?: string;
+          to_account_id?: string | null;
           user_id?: string;
         };
         Update: {
+          account_id?: string | null;
           amount?: number;
           category_id?: string | null;
           created_at?: string;
@@ -139,14 +192,29 @@ export type Database = {
           kind?: Database["public"]["Enums"]["movement_kind"];
           note?: string | null;
           occurred_on?: string;
+          to_account_id?: string | null;
           user_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "transactions_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "transactions_category_id_fkey";
             columns: ["category_id"];
             isOneToOne: false;
             referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "transactions_to_account_id_fkey";
+            columns: ["to_account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
             referencedColumns: ["id"];
           },
         ];
@@ -159,7 +227,8 @@ export type Database = {
       [_ in never]: never;
     };
     Enums: {
-      movement_kind: "income" | "expense";
+      account_kind: "debit" | "credit" | "yield";
+      movement_kind: "income" | "expense" | "transfer" | "adjustment";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -171,6 +240,10 @@ export type Database = {
 type Tables = Database["public"]["Tables"];
 
 export type MovementKind = Database["public"]["Enums"]["movement_kind"];
+/** Las categorías solo son de ingreso o gasto (check en la BD). */
+export type CategoryKind = Extract<MovementKind, "income" | "expense">;
+export type AccountKind = Database["public"]["Enums"]["account_kind"];
+export type Account = Tables["accounts"]["Row"];
 export type Category = Tables["categories"]["Row"];
 export type Transaction = Tables["transactions"]["Row"];
 export type SavingsGoal = Tables["savings_goals"]["Row"];

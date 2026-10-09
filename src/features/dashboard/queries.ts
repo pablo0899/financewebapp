@@ -12,9 +12,10 @@ export async function getMonthSummary(month: string) {
 
   let income = 0;
   let expense = 0;
+  // Transferencias (ej. pagar la tarjeta) y ajustes de saldo no son ingreso ni gasto.
   for (const t of transactions) {
     if (t.kind === "income") income += Number(t.amount);
-    else expense += Number(t.amount);
+    if (t.kind === "expense") expense += Number(t.amount);
   }
 
   return {
@@ -28,6 +29,6 @@ export async function getMonthSummary(month: string) {
     uncategorized: transactions
       .filter((t) => t.kind === "expense" && !t.category_id)
       .reduce((s, t) => s + Number(t.amount), 0),
-    recent: transactions.slice(0, 5),
+    recent: transactions.filter((t) => t.kind === "income" || t.kind === "expense").slice(0, 5),
   };
 }

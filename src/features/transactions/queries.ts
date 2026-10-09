@@ -9,7 +9,9 @@ export const getMonthTransactions = cache(async (month: string) => {
   const { start, end } = monthRange(month);
   const { data, error } = await supabase
     .from("transactions")
-    .select("*, category:categories(id, name, icon, color)")
+    .select(
+      "*, category:categories(id, name, icon, color), account:accounts!transactions_account_id_fkey(id, name, icon), to_account:accounts!transactions_to_account_id_fkey(id, name, icon)",
+    )
     .gte("occurred_on", start)
     .lt("occurred_on", end)
     .order("occurred_on", { ascending: false })
