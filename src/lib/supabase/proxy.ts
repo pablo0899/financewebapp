@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { allowedSections, homeFor, sectionForPath } from "@/lib/access";
 import type { Database } from "./database.types";
 
 const PUBLIC_PATHS = ["/login"];
@@ -34,8 +35,13 @@ export async function updateSession(request: NextRequest) {
   if (!isLoggedIn && !isPublic) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
-  if (isLoggedIn && isPublic) {
-    return NextResponse.redirect(new URL("/", request.url));
+  if (isLoggedIn) {
+    const sections = allowedSections(data?.claims);
+    if (isPublic) return NextResponse.redirect(new URL(homeFor(sections), request.url));
+    // Quien solo tiene acceso a Prismatix no entra a las finanzas personales (y viceversa).
+    if (sections.length > 0 && !sections.includes(sectionForPath(request.nextUrl.pathname))) {
+      return NextResponse.redirect(new URL(homeFor(sections), request.url));
+    }
   }
 
   return response;

@@ -9,6 +9,10 @@
   --accent: #4f46e5;
   --income: #059669;
   --expense: #e11d48;
+  /* Series de gráficas ingresos vs. gastos: azul/naranja (verde/rojo no pasa
+     la validación para daltonismo deuteranópico). */
+  --chart-income: #2563eb;
+  --chart-expense: #ea580c;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -21,6 +25,8 @@
     --accent: #818cf8;
     --income: #34d399;
     --expense: #fb7185;
+    --chart-income: #3b82f6;
+    --chart-expense: #ea580c;
   }
 }
 
@@ -33,6 +39,8 @@
   --color-accent: var(--accent);
   --color-income: var(--income);
   --color-expense: var(--expense);
+  --color-chart-income: var(--chart-income);
+  --color-chart-expense: var(--chart-expense);
   --font-sans: var(--font-geist-sans);
 }
 

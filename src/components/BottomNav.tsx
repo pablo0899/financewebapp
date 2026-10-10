@@ -3,49 +3,48 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const TABS = [
-  { href: "/", label: "Inicio", icon: "🏠" },
-  { href: "/movimientos", label: "Movimientos", icon: "📋" },
-  { href: "/cuentas", label: "Cuentas", icon: "💳" },
-  { href: "/presupuestos", label: "Presupuestos", icon: "🎯" },
-] as const;
+export type NavTab = { href: string; label: string; icon: string };
+type NavProps = { tabs: NavTab[]; fabHref: string; fabLabel: string };
 
 /** Navegación inferior con la pestaña activa según la URL. */
-export function BottomNav() {
-  return <NavBar pathname={usePathname()} />;
+export function BottomNav(props: NavProps) {
+  return <NavBar {...props} pathname={usePathname()} />;
 }
 
 /**
- * La barra en sí. En rutas dinámicas la URL solo se conoce al pedir la página,
- * así que el layout la muestra sin pestaña activa (pathname="") mientras carga.
+ * La barra en sí: la mitad de las pestañas, el botón "+" al centro y el resto.
+ * En rutas dinámicas la URL solo se conoce al pedir la página, así que el
+ * layout la muestra sin pestaña activa (pathname="") mientras carga.
  */
-export function NavBar({ pathname }: { pathname: string }) {
+export function NavBar({ tabs, fabHref, fabLabel, pathname }: NavProps & { pathname: string }) {
+  const half = Math.ceil(tabs.length / 2);
+  // La pestaña raíz de la sección (la de href más corto) solo se activa con su URL exacta.
+  const root = tabs.reduce((a, b) => (b.href.length < a.href.length ? b : a)).href;
+  const isActive = (href: string) =>
+    pathname !== fabHref && (href === root ? pathname === href : pathname.startsWith(href));
+
   return (
     <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
       <div className="mx-auto flex max-w-md items-center px-1">
-        {TABS.slice(0, 2).map((tab) => (
-          <Tab key={tab.href} {...tab} active={isActive(pathname, tab.href)} />
+        {tabs.slice(0, half).map((tab) => (
+          <Tab key={tab.href} {...tab} active={isActive(tab.href)} />
         ))}
         <Link
-          href="/movimientos/nuevo"
-          aria-label="Nuevo movimiento"
+          href={fabHref}
+          aria-label={fabLabel}
           className="-mt-6 flex size-14 shrink-0 items-center justify-center rounded-full bg-accent text-3xl text-white shadow-lg"
         >
           +
         </Link>
-        {TABS.slice(2).map((tab) => (
-          <Tab key={tab.href} {...tab} active={isActive(pathname, tab.href)} />
+        {tabs.slice(half).map((tab) => (
+          <Tab key={tab.href} {...tab} active={isActive(tab.href)} />
         ))}
       </div>
     </nav>
   );
 }
 
-function isActive(pathname: string, href: string) {
-  return href === "/" ? pathname === "/" : pathname.startsWith(href) && pathname !== "/movimientos/nuevo";
-}
-
-function Tab({ href, label, icon, active }: { href: string; label: string; icon: string; active: boolean }) {
+function Tab({ href, label, icon, active }: NavTab & { active: boolean }) {
   return (
     <Link
       href={href}

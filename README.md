@@ -19,6 +19,30 @@ teléfono como PWA ("Agregar a pantalla de inicio") y guarda los datos en Supaba
 
 Todas las vistas mensuales aceptan `?mes=YYYY-MM`.
 
+### Prismatix (finanzas del negocio)
+
+Sección aparte (selector **Personal / Prismatix** arriba), con datos que pertenecen al
+negocio y ven todos sus socios.
+
+| Módulo | Ruta | Qué hace |
+| --- | --- | --- |
+| Resumen | `/prismatix` | Utilidad y margen del mes, caja del negocio, gastos por persona (anillo), por categoría, ventas por artículo y canal, tendencia de 6 meses |
+| Movimientos | `/prismatix/movimientos` | Gastos y ventas del mes |
+| Nuevo | `/prismatix/nuevo` | Gasto (quién, qué, categoría, con qué dinero) o venta (artículo, cantidad, total, comisión/envío, canal, cliente) |
+| Catálogo | `/prismatix/catalogo` | Artículos con precio sugerido, categorías de gasto y canales |
+| Socios | `/prismatix/socios` | Cuánto puso cada socio de su bolsa, cuánto se le debe y reembolsos |
+
+- **Acceso por secciones**: `app_metadata.sections` del usuario en Supabase. Sin el campo ve
+  todo; con `["prismatix"]` solo ve Prismatix (`src/lib/access.ts`, aplicado en el proxy).
+- **Dar acceso a un socio**: crear su usuario en Supabase (Authentication → Add user), y luego:
+  ```sql
+  update auth.users set raw_app_meta_data = raw_app_meta_data || '{"sections":["prismatix"]}'
+   where email = 'correo@socio.com';
+  update public.business_members set user_id = (select id from auth.users where email = 'correo@socio.com')
+   where display_name = 'Ximena';
+  ```
+- Colores de las gráficas validados para daltonismo (ingresos azul / gastos naranja).
+
 ### Cómo se calculan los saldos
 
 - Signo "de activo": positivo = dinero disponible, negativo = deuda (tarjetas).

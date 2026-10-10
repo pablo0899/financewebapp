@@ -57,6 +57,337 @@ export type Database = {
         };
         Relationships: [];
       };
+      biz_channels: {
+        Row: {
+          business_id: string;
+          created_at: string;
+          id: string;
+          name: string;
+        };
+        Insert: {
+          business_id: string;
+          created_at?: string;
+          id?: string;
+          name: string;
+        };
+        Update: {
+          business_id?: string;
+          created_at?: string;
+          id?: string;
+          name?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "biz_channels_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      biz_expense_categories: {
+        Row: {
+          business_id: string;
+          color: string;
+          created_at: string;
+          icon: string;
+          id: string;
+          name: string;
+        };
+        Insert: {
+          business_id: string;
+          color?: string;
+          created_at?: string;
+          icon?: string;
+          id?: string;
+          name: string;
+        };
+        Update: {
+          business_id?: string;
+          color?: string;
+          created_at?: string;
+          icon?: string;
+          id?: string;
+          name?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "biz_expense_categories_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      biz_expenses: {
+        Row: {
+          amount: number;
+          business_id: string;
+          category_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string;
+          id: string;
+          occurred_on: string;
+          paid_with: string;
+          spent_by: string;
+        };
+        Insert: {
+          amount: number;
+          business_id: string;
+          category_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          description: string;
+          id?: string;
+          occurred_on?: string;
+          paid_with?: string;
+          spent_by: string;
+        };
+        Update: {
+          amount?: number;
+          business_id?: string;
+          category_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string;
+          id?: string;
+          occurred_on?: string;
+          paid_with?: string;
+          spent_by?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "biz_expenses_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "biz_expenses_category_id_business_id_fkey";
+            columns: ["category_id", "business_id"];
+            isOneToOne: false;
+            referencedRelation: "biz_expense_categories";
+            referencedColumns: ["id", "business_id"];
+          },
+          {
+            foreignKeyName: "biz_expenses_spent_by_business_id_fkey";
+            columns: ["spent_by", "business_id"];
+            isOneToOne: false;
+            referencedRelation: "business_members";
+            referencedColumns: ["id", "business_id"];
+          },
+        ];
+      };
+      biz_items: {
+        Row: {
+          active: boolean;
+          business_id: string;
+          created_at: string;
+          icon: string;
+          id: string;
+          name: string;
+          price: number | null;
+        };
+        Insert: {
+          active?: boolean;
+          business_id: string;
+          created_at?: string;
+          icon?: string;
+          id?: string;
+          name: string;
+          price?: number | null;
+        };
+        Update: {
+          active?: boolean;
+          business_id?: string;
+          created_at?: string;
+          icon?: string;
+          id?: string;
+          name?: string;
+          price?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "biz_items_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      biz_reimbursements: {
+        Row: {
+          amount: number;
+          business_id: string;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          member_id: string;
+          occurred_on: string;
+        };
+        Insert: {
+          amount: number;
+          business_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          member_id: string;
+          occurred_on?: string;
+        };
+        Update: {
+          amount?: number;
+          business_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          member_id?: string;
+          occurred_on?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "biz_reimbursements_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "biz_reimbursements_member_id_business_id_fkey";
+            columns: ["member_id", "business_id"];
+            isOneToOne: false;
+            referencedRelation: "business_members";
+            referencedColumns: ["id", "business_id"];
+          },
+        ];
+      };
+      biz_sales: {
+        Row: {
+          amount: number;
+          business_id: string;
+          channel_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          customer: string | null;
+          fees: number;
+          id: string;
+          item_id: string | null;
+          note: string | null;
+          occurred_on: string;
+          quantity: number;
+        };
+        Insert: {
+          amount: number;
+          business_id: string;
+          channel_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          customer?: string | null;
+          fees?: number;
+          id?: string;
+          item_id?: string | null;
+          note?: string | null;
+          occurred_on?: string;
+          quantity?: number;
+        };
+        Update: {
+          amount?: number;
+          business_id?: string;
+          channel_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          customer?: string | null;
+          fees?: number;
+          id?: string;
+          item_id?: string | null;
+          note?: string | null;
+          occurred_on?: string;
+          quantity?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "biz_sales_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "biz_sales_channel_id_business_id_fkey";
+            columns: ["channel_id", "business_id"];
+            isOneToOne: false;
+            referencedRelation: "biz_channels";
+            referencedColumns: ["id", "business_id"];
+          },
+          {
+            foreignKeyName: "biz_sales_item_id_business_id_fkey";
+            columns: ["item_id", "business_id"];
+            isOneToOne: false;
+            referencedRelation: "biz_items";
+            referencedColumns: ["id", "business_id"];
+          },
+        ];
+      };
+      business_members: {
+        Row: {
+          business_id: string;
+          color: string;
+          created_at: string;
+          display_name: string;
+          id: string;
+          role: string;
+          user_id: string | null;
+        };
+        Insert: {
+          business_id: string;
+          color?: string;
+          created_at?: string;
+          display_name: string;
+          id?: string;
+          role?: string;
+          user_id?: string | null;
+        };
+        Update: {
+          business_id?: string;
+          color?: string;
+          created_at?: string;
+          display_name?: string;
+          id?: string;
+          role?: string;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "business_members_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      businesses: {
+        Row: {
+          created_at: string;
+          id: string;
+          name: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          name: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          name?: string;
+        };
+        Relationships: [];
+      };
       categories: {
         Row: {
           color: string;
@@ -244,6 +575,10 @@ export type MovementKind = Database["public"]["Enums"]["movement_kind"];
 export type CategoryKind = Extract<MovementKind, "income" | "expense">;
 export type AccountKind = Database["public"]["Enums"]["account_kind"];
 export type Account = Tables["accounts"]["Row"];
+export type BusinessMember = Tables["business_members"]["Row"];
+export type BizItem = Tables["biz_items"]["Row"];
+export type BizChannel = Tables["biz_channels"]["Row"];
+export type BizExpenseCategory = Tables["biz_expense_categories"]["Row"];
 export type Category = Tables["categories"]["Row"];
 export type Transaction = Tables["transactions"]["Row"];
 export type SavingsGoal = Tables["savings_goals"]["Row"];
