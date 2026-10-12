@@ -63,7 +63,7 @@ export async function getAccountTransactions(id: string, limit = 30) {
   const { data, error } = await supabase
     .from("transactions")
     .select(
-      "*, category:categories(id, name, icon, color), account:accounts!transactions_account_id_fkey(id, name, icon), to_account:accounts!transactions_to_account_id_fkey(id, name, icon)",
+      "*, category:categories(id, name, icon, color), account:accounts!transactions_account_id_fkey(id, name, icon, kind), to_account:accounts!transactions_to_account_id_fkey(id, name, icon)",
     )
     .or(`account_id.eq.${id},to_account_id.eq.${id}`)
     .order("occurred_on", { ascending: false })

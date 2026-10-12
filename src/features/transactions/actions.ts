@@ -7,6 +7,9 @@ import { requireUser } from "@/lib/supabase/server";
 
 export type FormState = { error?: string };
 
+/** Valor de `to_account_id` en el formulario para una transferencia a una cuenta externa. */
+const EXTERNAL = "external";
+
 export async function createTransaction(_prev: FormState, formData: FormData): Promise<FormState> {
   const kind = formData.get("kind");
   const amount = parseAmount(formData.get("amount"));
@@ -21,6 +24,22 @@ export async function createTransaction(_prev: FormState, formData: FormData): P
   if (!isISODate(occurredOn)) return { error: "Elige una fecha." };
 
   const { supabase } = await requireUser();
+
+  // A una cuenta externa el dinero sale: se guarda como gasto (categoría opcional).
+  if (kind === "transfer" && toAccountId === EXTERNAL) {
+    if (!accountId) return { error: "Elige la cuenta de origen." };
+    const { error } = await supabase.from("transactions").insert({
+      kind: "expense",
+      external: true,
+      amount,
+      account_id: accountId,
+      category_id: categoryId || null,
+      occurred_on: occurredOn,
+      note,
+    });
+    if (error) return { error: "No se pudo guardar. Intenta de nuevo." };
+    redirect(`/?mes=${occurredOn.slice(0, 7)}`);
+  }
 
   if (kind === "transfer") {
     if (!accountId || !toAccountId) return { error: "Elige la cuenta de origen y la de destino." };

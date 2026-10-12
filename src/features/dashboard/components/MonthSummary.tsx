@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { formatMoney } from "@/lib/format";
 
-type Props = { income: number; expense: number; saved: number; available: number };
+type Props = { income: number; expense: number; saved: number; unidentified: number; available: number };
 
-export function MonthSummary({ income, expense, saved, available }: Props) {
+export function MonthSummary({ income, expense, saved, unidentified, available }: Props) {
   return (
     <div className="rounded-2xl bg-accent p-5 text-white">
       <p className="text-sm opacity-80">Disponible este mes</p>
@@ -15,6 +15,11 @@ export function MonthSummary({ income, expense, saved, available }: Props) {
           <Stat label="Ahorro ›" value={saved} />
         </Link>
       </div>
+      {unidentified > 0 && (
+        <p className="mt-3 text-sm opacity-80">
+          Incluye {formatMoney(unidentified)} de egresos sin identificar (ajustes de saldo).
+        </p>
+      )}
     </div>
   );
 }

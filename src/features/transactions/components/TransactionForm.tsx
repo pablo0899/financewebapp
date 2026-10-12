@@ -13,6 +13,8 @@ const KIND_ACTIVE: Record<Kind, string> = {
   income: "bg-income text-white",
   transfer: "bg-accent text-white",
 };
+/** Valor de `to_account_id` para una transferencia a una cuenta externa (ver actions.ts). */
+const EXTERNAL = "external";
 const field = "w-full rounded-xl border border-border bg-surface px-4 py-3 outline-none focus:border-accent";
 
 export function TransactionForm({
@@ -36,7 +38,9 @@ export function TransactionForm({
   const [toAccountId, setToAccountId] = useState("");
   const [date, setDate] = useState(defaultDate);
   const [note, setNote] = useState("");
-  const options = categories.filter((c) => c.kind === kind);
+  const external = kind === "transfer" && toAccountId === EXTERNAL;
+  // Las transferencias externas usan (opcionalmente) categorías de gasto.
+  const options = categories.filter((c) => c.kind === (kind === "income" ? "income" : "expense"));
 
   if (accounts.length === 0) {
     return (
@@ -84,22 +88,32 @@ export function TransactionForm({
         onChange={setAccountId}
       />
 
-      {kind === "transfer" ? (
+      {kind === "transfer" && (
         <>
           <AccountPicker
             name="to_account_id"
             legend="Hacia"
             accounts={accounts.filter((a) => a.id !== accountId)}
             value={toAccountId}
-            onChange={setToAccountId}
+            onChange={(id) => {
+              setToAccountId(id);
+              setCategoryId("");
+            }}
+            extra={{ id: EXTERNAL, label: "↗️ Cuenta externa" }}
           />
           <p className="-mt-2 text-xs text-muted">
-            Para pagar una tarjeta: desde Mercado Pago hacia la tarjeta. No cuenta como gasto (el gasto ya se registró al comprar).
+            {external
+              ? "Dinero que sale a otra persona o a una cuenta que no está en la app: cuenta como egreso del mes."
+              : "Para pagar una tarjeta: desde Mercado Pago hacia la tarjeta. No cuenta como gasto (el gasto ya se registró al comprar)."}
           </p>
         </>
-      ) : (
+      )}
+
+      {(kind !== "transfer" || external) && (
         <fieldset>
-          <legend className="mb-2 text-sm font-medium">Categoría</legend>
+          <legend className="mb-2 text-sm font-medium">
+            Categoría{external && <span className="font-normal text-muted"> (opcional, para que cuente en un presupuesto)</span>}
+          </legend>
           <div className="grid grid-cols-4 gap-2">
             {options.map((c) => (
               <label key={c.id} className="cursor-pointer">
@@ -107,9 +121,10 @@ export function TransactionForm({
                   type="radio"
                   name="category_id"
                   value={c.id}
-                  required
+                  required={!external}
                   checked={categoryId === c.id}
                   onChange={() => setCategoryId(c.id)}
+                  onClick={() => external && categoryId === c.id && setCategoryId("")}
                   className="peer sr-only"
                 />
                 <span className="flex h-full flex-col items-center gap-1 rounded-xl border border-border bg-surface p-2 text-center text-[11px] leading-tight peer-checked:border-accent peer-checked:ring-2 peer-checked:ring-accent/40">
@@ -133,7 +148,7 @@ export function TransactionForm({
         <span className="text-sm font-medium">Fecha</span>
         <input name="occurred_on" type="date" required value={date} onChange={(e) => setDate(e.target.value)} className={field} />
       </label>
-      <input name="note" maxLength={200} placeholder="Nota (opcional)" value={note} onChange={(e) => setNote(e.target.value)} className={field} />
+      <input name="note" maxLength={200} placeholder={external ? "¿A quién? (opcional)" : "Nota (opcional)"} value={note} onChange={(e) => setNote(e.target.value)} className={field} />
 
       {state.error && <p className="text-sm text-expense">{state.error}</p>}
       <button disabled={pending} className="rounded-xl bg-accent py-3 font-medium text-white disabled:opacity-60">
@@ -149,18 +164,22 @@ function AccountPicker({
   accounts,
   value,
   onChange,
+  extra,
 }: {
   name: string;
   legend: string;
   accounts: Account[];
   value: string;
   onChange: (id: string) => void;
+  /** Opción adicional que no es una cuenta (ej. "Cuenta externa"). */
+  extra?: { id: string; label: string };
 }) {
+  const options = [...accounts.map((a) => ({ id: a.id, label: `${a.icon} ${a.name}` })), ...(extra ? [extra] : [])];
   return (
     <fieldset>
       <legend className="mb-2 text-sm font-medium">{legend}</legend>
       <div className="flex flex-wrap gap-2">
-        {accounts.map((a) => (
+        {options.map((a) => (
           <label key={a.id} className="cursor-pointer">
             <input
               type="radio"
@@ -172,7 +191,7 @@ function AccountPicker({
               className="peer sr-only"
             />
             <span className="flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-sm peer-checked:border-accent peer-checked:ring-2 peer-checked:ring-accent/40">
-              {a.icon} {a.name}
+              {a.label}
             </span>
           </label>
         ))}

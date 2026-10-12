@@ -19,7 +19,11 @@ export function TransactionItem({ transaction: t, accountId, detail, action }: P
   let sign: "+" | "−" | "" = t.kind === "income" ? "+" : "−";
   let tone = t.kind === "income" ? "text-income" : "text-expense";
 
-  if (t.kind === "transfer") {
+  if (t.external) {
+    // Sale de tus cuentas: es egreso, con o sin categoría.
+    icon = t.category?.icon ?? "↗️";
+    title = t.category ? `${t.category.name} · transferencia` : "Transferencia externa";
+  } else if (t.kind === "transfer") {
     icon = "↔️";
     iconBg = "var(--border)";
     title = `${t.account?.name ?? "?"} → ${t.to_account?.name ?? "?"}`;

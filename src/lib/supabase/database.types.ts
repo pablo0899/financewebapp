@@ -495,6 +495,7 @@ export type Database = {
           amount: number;
           category_id: string | null;
           created_at: string;
+          external: boolean;
           id: string;
           kind: Database["public"]["Enums"]["movement_kind"];
           note: string | null;
@@ -507,6 +508,7 @@ export type Database = {
           amount: number;
           category_id?: string | null;
           created_at?: string;
+          external?: boolean;
           id?: string;
           kind: Database["public"]["Enums"]["movement_kind"];
           note?: string | null;
@@ -519,6 +521,7 @@ export type Database = {
           amount?: number;
           category_id?: string | null;
           created_at?: string;
+          external?: boolean;
           id?: string;
           kind?: Database["public"]["Enums"]["movement_kind"];
           note?: string | null;

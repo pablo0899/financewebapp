@@ -12,22 +12,33 @@ export async function getMonthSummary(month: string) {
 
   let income = 0;
   let expense = 0;
-  // Transferencias (ej. pagar la tarjeta) y ajustes de saldo no son ingreso ni gasto.
+  let unidentified = 0;
+  // Las transferencias entre cuentas propias (ej. pagar la tarjeta) no son ingreso
+  // ni gasto; las transferencias a cuentas externas sí son gasto (kind "expense").
   for (const t of transactions) {
     if (t.kind === "income") income += Number(t.amount);
     if (t.kind === "expense") expense += Number(t.amount);
+    // Ajustes que bajaron el saldo de una cuenta de dinero (no tarjetas): salió
+    // dinero sin registrarse. Los positivos (alta de la cuenta, rendimientos) no cuentan.
+    if (t.kind === "adjustment" && t.account && t.account.kind !== "credit" && Number(t.amount) < 0) {
+      unidentified -= Number(t.amount);
+    }
   }
 
   return {
     income,
     expense,
     saved,
-    available: income - expense - saved,
+    unidentified,
+    available: income - expense - unidentified - saved,
     budgets: budgets.filter((b) => b.limit !== null) as ((typeof budgets)[number] & { limit: number })[],
     // Categorías sin presupuesto en las que sí hubo gasto este mes.
     unbudgeted: budgets.filter((b) => b.limit === null && b.spent > 0).sort((a, b) => b.spent - a.spent),
     uncategorized: transactions
-      .filter((t) => t.kind === "expense" && !t.category_id)
+      .filter((t) => t.kind === "expense" && !t.category_id && !t.external)
+      .reduce((s, t) => s + Number(t.amount), 0),
+    externalTransfers: transactions
+      .filter((t) => t.external && !t.category_id)
       .reduce((s, t) => s + Number(t.amount), 0),
     recent: transactions.filter((t) => t.kind === "income" || t.kind === "expense").slice(0, 5),
   };

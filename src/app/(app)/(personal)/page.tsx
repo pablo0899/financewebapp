@@ -64,7 +64,7 @@ async function Dashboard({ searchParams }: Pick<PageProps<"/">, "searchParams">)
         )}
       </section>
 
-      {(summary.unbudgeted.length > 0 || summary.uncategorized > 0) && (
+      {(summary.unbudgeted.length > 0 || summary.uncategorized > 0 || summary.externalTransfers > 0) && (
         <section className="rounded-xl bg-surface p-4">
           <h2 className="mb-2 font-medium">Gastos sin presupuesto</h2>
           <ul className="flex flex-col gap-1 text-sm">
@@ -80,6 +80,12 @@ async function Dashboard({ searchParams }: Pick<PageProps<"/">, "searchParams">)
               <li className="flex justify-between">
                 <span>❔ Sin categoría</span>
                 <span className="tabular-nums text-muted">{formatMoney(summary.uncategorized)}</span>
+              </li>
+            )}
+            {summary.externalTransfers > 0 && (
+              <li className="flex justify-between">
+                <span>↗️ Transferencias externas</span>
+                <span className="tabular-nums text-muted">{formatMoney(summary.externalTransfers)}</span>
               </li>
             )}
           </ul>
