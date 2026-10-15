@@ -1,7 +1,7 @@
 import "server-only";
 import { getBudgetProgress } from "@/features/budgets/queries";
 import { getMonthSavings } from "@/features/savings/queries";
-import { getMonthTransactions } from "@/features/transactions/queries";
+import { getMonthTransactions, getRecentTransactions } from "@/features/transactions/queries";
 
 export async function getMonthSummary(month: string) {
   const [transactions, budgets, saved] = await Promise.all([
@@ -42,4 +42,10 @@ export async function getMonthSummary(month: string) {
       .reduce((s, t) => s + Number(t.amount), 0),
     recent: transactions.filter((t) => t.kind === "income" || t.kind === "expense").slice(0, 5),
   };
+}
+
+/** Total gastado (gastos y transferencias externas) en los últimos `days` días. */
+export async function getRecentSpending(days: number) {
+  const expenses = (await getRecentTransactions(days)).filter((t) => t.kind === "expense");
+  return { total: expenses.reduce((s, t) => s + Number(t.amount), 0), count: expenses.length };
 }

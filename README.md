@@ -9,10 +9,11 @@ teléfono como PWA ("Agregar a pantalla de inicio") y guarda los datos en Supaba
 
 | Módulo | Ruta | Qué hace |
 | --- | --- | --- |
-| Inicio | `/` | Liquidez, deuda en tarjetas y saldo real; disponible del mes (ingresos − gastos − ahorro); un anillo por categoría con presupuesto; gastos sin presupuesto y últimos movimientos |
+| Inicio | `/` | Liquidez, deuda en tarjetas y saldo real; gastado en los últimos N días (`?dias=`); disponible del mes (ingresos − gastos − egresos sin identificar − ahorro); un anillo por categoría con presupuesto (al tocarlo abre sus gastos); gastos sin presupuesto y últimos movimientos |
 | Cuentas | `/cuentas`, `/cuentas/[id]` | Débito, tarjetas de crédito y cuentas con rendimiento. Saldo de cada una; en tarjetas, cuánto pagar para no generar intereses y cuándo; en rendimiento, estimado diario con interés compuesto. "Ajustar saldo" para cuadrar con el saldo real |
-| Movimientos | `/movimientos` | Lista por mes agrupada por día; cambiar la cuenta de cada movimiento; borrar |
-| Nuevo movimiento | `/movimientos/nuevo` | Gasto, ingreso o transferencia (ej. pagar la tarjeta). Monto, cuenta, categoría y fecha obligatorias |
+| Movimientos | `/movimientos` | Lista por mes agrupada por día; filtros `?categoria=<id>` y `?dias=N` con su total; cambiar la cuenta de cada movimiento; borrar |
+| Editar movimiento | `/movimientos/[id]` | Monto, tipo, cuenta, categoría, fecha y nota; todas las estadísticas se recalculan solas |
+| Nuevo movimiento | `/movimientos/nuevo` | Gasto, ingreso o transferencia (ej. pagar la tarjeta, o a una cuenta externa: cuenta como egreso). Monto, cuenta, categoría y fecha obligatorias |
 | Presupuestos | `/presupuestos` | Límite mensual fijo por categoría (lo gastado se reinicia cada mes); crear y borrar categorías |
 | Ahorro | `/ahorro` | Metas de ahorro con objetivo opcional; aportar y retirar; total ahorrado y ahorro del mes |
 | Login | `/login` | Acceso con correo y contraseña (sin registro público) |
@@ -140,8 +141,7 @@ Abre http://localhost:3000. Para probar desde el teléfono en la misma red usa
 
 ## Ideas para siguientes versiones
 
-- Cuentas (efectivo, débito, tarjetas) con saldo por cuenta
-- Editar movimientos y administrar categorías
+- Editar categorías
 - Movimientos recurrentes (renta, suscripciones)
 - Gráfica de tendencia de varios meses
 - Exportar a CSV

@@ -38,3 +38,16 @@ export function shiftMonth(month: string, delta: number) {
   const d = new Date(Date.UTC(y, m - 1 + delta, 1));
   return d.toISOString().slice(0, 7);
 }
+
+/** "2026-10-15" + n días (n puede ser negativo). */
+export function shiftDays(isoDate: string, days: number) {
+  const d = new Date(`${isoDate}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Días pedidos en `?dias=` (1–365); si no es válido, `fallback`. */
+export function parseDays(value: string | string[] | undefined, fallback = 7) {
+  const n = Number(value);
+  return typeof value === "string" && Number.isInteger(n) && n >= 1 && n <= 365 ? n : fallback;
+}

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { formatMoney } from "@/lib/format";
 import type { TransactionWithCategory } from "../queries";
@@ -9,9 +10,11 @@ type Props = {
   /** Debajo del nombre (ej. selector de cuenta). */
   detail?: ReactNode;
   action?: ReactNode;
+  /** Si se da, el nombre del movimiento abre esta ruta (ej. su edición). */
+  href?: string;
 };
 
-export function TransactionItem({ transaction: t, accountId, detail, action }: Props) {
+export function TransactionItem({ transaction: t, accountId, detail, action, href }: Props) {
   const amount = Number(t.amount);
   let icon = t.category?.icon ?? "❔";
   let iconBg = `${t.category?.color ?? "#94a3b8"}22`;
@@ -43,8 +46,11 @@ export function TransactionItem({ transaction: t, accountId, detail, action }: P
         {icon}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="truncate font-medium">{title}</p>
-        {t.kind !== "adjustment" && t.note && <p className="truncate text-sm text-muted">{t.note}</p>}
+        {/* El detalle puede traer un formulario, por eso solo el nombre y la nota son el enlace. */}
+        <Wrapper href={href}>
+          <p className="truncate font-medium">{title}</p>
+          {t.kind !== "adjustment" && t.note && <p className="truncate text-sm text-muted">{t.note}</p>}
+        </Wrapper>
         {detail ??
           (t.account && t.kind !== "transfer" && (
             <p className="truncate text-xs text-muted">
@@ -58,5 +64,15 @@ export function TransactionItem({ transaction: t, accountId, detail, action }: P
       </span>
       {action}
     </li>
+  );
+}
+
+function Wrapper({ href, children }: { href?: string; children: ReactNode }) {
+  return href ? (
+    <Link href={href} className="block">
+      {children}
+    </Link>
+  ) : (
+    children
   );
 }

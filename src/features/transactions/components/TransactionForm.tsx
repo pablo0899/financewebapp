@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useActionState, useState } from "react";
-import type { Account, Category } from "@/lib/supabase/database.types";
-import { createTransaction, type FormState } from "../actions";
+import type { Account, Category, Transaction } from "@/lib/supabase/database.types";
+import { createTransaction, updateTransaction, type FormState } from "../actions";
 
 type Kind = "expense" | "income" | "transfer";
 
@@ -22,22 +22,32 @@ export function TransactionForm({
   accounts,
   defaultDate,
   defaultAccountId,
+  transaction,
+  returnTo,
 }: {
   categories: Category[];
   accounts: Account[];
   defaultDate: string;
   defaultAccountId: string | null;
+  /** Movimiento a editar; sin él, el formulario crea uno nuevo. */
+  transaction?: Transaction;
+  /** Ruta a la que regresar después de guardar los cambios. */
+  returnTo?: string;
 }) {
-  const [state, action, pending] = useActionState<FormState, FormData>(createTransaction, {});
+  const t = transaction;
+  const [state, action, pending] = useActionState<FormState, FormData>(
+    t ? updateTransaction.bind(null, t.id) : createTransaction,
+    {},
+  );
   // Campos controlados: React limpia los formularios tras cada envío y así no
   // se pierde lo capturado cuando el servidor regresa un error.
-  const [kind, setKind] = useState<Kind>("expense");
-  const [amount, setAmount] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [accountId, setAccountId] = useState(defaultAccountId ?? "");
-  const [toAccountId, setToAccountId] = useState("");
-  const [date, setDate] = useState(defaultDate);
-  const [note, setNote] = useState("");
+  const [kind, setKind] = useState<Kind>(!t || t.kind === "adjustment" ? "expense" : t.external ? "transfer" : t.kind);
+  const [amount, setAmount] = useState(t ? String(t.amount) : "");
+  const [categoryId, setCategoryId] = useState(t?.category_id ?? "");
+  const [accountId, setAccountId] = useState(t ? (t.account_id ?? "") : (defaultAccountId ?? ""));
+  const [toAccountId, setToAccountId] = useState(t?.external ? EXTERNAL : (t?.to_account_id ?? ""));
+  const [date, setDate] = useState(t?.occurred_on ?? defaultDate);
+  const [note, setNote] = useState(t?.note ?? "");
   const external = kind === "transfer" && toAccountId === EXTERNAL;
   // Las transferencias externas usan (opcionalmente) categorías de gasto.
   const options = categories.filter((c) => c.kind === (kind === "income" ? "income" : "expense"));
@@ -53,6 +63,7 @@ export function TransactionForm({
   return (
     <form action={action} className="flex flex-col gap-4">
       <input type="hidden" name="kind" value={kind} />
+      {returnTo && <input type="hidden" name="return_to" value={returnTo} />}
       <div className="grid grid-cols-3 gap-1 rounded-xl bg-surface p-1 text-sm">
         {(["expense", "income", "transfer"] as const).map((k) => (
           <button
@@ -74,7 +85,7 @@ export function TransactionForm({
         required
         inputMode="decimal"
         placeholder="$0.00"
-        autoFocus
+        autoFocus={!t}
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
         className="w-full bg-transparent py-4 text-center text-5xl font-semibold outline-none"
@@ -152,7 +163,7 @@ export function TransactionForm({
 
       {state.error && <p className="text-sm text-expense">{state.error}</p>}
       <button disabled={pending} className="rounded-xl bg-accent py-3 font-medium text-white disabled:opacity-60">
-        {pending ? "Guardando…" : "Guardar"}
+        {pending ? "Guardando…" : t ? "Guardar cambios" : "Guardar"}
       </button>
     </form>
   );

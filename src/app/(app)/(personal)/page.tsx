@@ -7,9 +7,10 @@ import { AccountsSummary } from "@/features/accounts/components/AccountsSummary"
 import { getAccountsOverview } from "@/features/accounts/queries";
 import { BudgetDonut } from "@/features/budgets/components/BudgetDonut";
 import { MonthSummary } from "@/features/dashboard/components/MonthSummary";
-import { getMonthSummary } from "@/features/dashboard/queries";
+import { RecentSpending } from "@/features/dashboard/components/RecentSpending";
+import { getMonthSummary, getRecentSpending } from "@/features/dashboard/queries";
 import { TransactionItem } from "@/features/transactions/components/TransactionItem";
-import { requestMonth } from "@/lib/dates";
+import { parseDays, requestMonth } from "@/lib/dates";
 import { formatMoney } from "@/lib/format";
 
 export default function DashboardPage({ searchParams }: PageProps<"/">) {
@@ -30,7 +31,14 @@ export default function DashboardPage({ searchParams }: PageProps<"/">) {
 
 async function Dashboard({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
   const month = await requestMonth(searchParams);
-  const [summary, accounts] = await Promise.all([getMonthSummary(month), getAccountsOverview()]);
+  const days = parseDays((await searchParams).dias);
+  const [summary, accounts, recentSpending] = await Promise.all([
+    getMonthSummary(month),
+    getAccountsOverview(),
+    getRecentSpending(days),
+  ]);
+  const categoryHref = (id: string) => `/movimientos?mes=${month}&categoria=${id}`;
+  const editHref = (id: string) => `/movimientos/${id}?volver=${encodeURIComponent(`/?mes=${month}`)}`;
 
   return (
     <>
@@ -41,7 +49,8 @@ async function Dashboard({ searchParams }: Pick<PageProps<"/">, "searchParams">)
           Da de alta tus cuentas y tarjetas para ver tu saldo real.
         </Link>
       )}
-      <MonthPicker month={month} basePath="/" />
+      <RecentSpending days={days} month={month} {...recentSpending} />
+      <MonthPicker month={month} basePath="/" query={`dias=${days}`} />
       <MonthSummary {...summary} />
 
       <section className="flex flex-col gap-2">
@@ -58,7 +67,9 @@ async function Dashboard({ searchParams }: Pick<PageProps<"/">, "searchParams">)
         ) : (
           <div className="grid grid-cols-2 gap-2">
             {summary.budgets.map((b) => (
-              <BudgetDonut key={b.category.id} {...b} />
+              <Link key={b.category.id} href={categoryHref(b.category.id)} aria-label={`Ver gastos de ${b.category.name}`}>
+                <BudgetDonut {...b} />
+              </Link>
             ))}
           </div>
         )}
@@ -69,11 +80,13 @@ async function Dashboard({ searchParams }: Pick<PageProps<"/">, "searchParams">)
           <h2 className="mb-2 font-medium">Gastos sin presupuesto</h2>
           <ul className="flex flex-col gap-1 text-sm">
             {summary.unbudgeted.map(({ category, spent }) => (
-              <li key={category.id} className="flex justify-between">
-                <span>
-                  {category.icon} {category.name}
-                </span>
-                <span className="tabular-nums text-muted">{formatMoney(spent)}</span>
+              <li key={category.id}>
+                <Link href={categoryHref(category.id)} className="flex justify-between">
+                  <span>
+                    {category.icon} {category.name}
+                  </span>
+                  <span className="tabular-nums text-muted">{formatMoney(spent)} ›</span>
+                </Link>
               </li>
             ))}
             {summary.uncategorized > 0 && (
@@ -104,7 +117,7 @@ async function Dashboard({ searchParams }: Pick<PageProps<"/">, "searchParams">)
         ) : (
           <ul className="divide-y divide-border">
             {summary.recent.map((t) => (
-              <TransactionItem key={t.id} transaction={t} />
+              <TransactionItem key={t.id} transaction={t} href={editHref(t.id)} />
             ))}
           </ul>
         )}

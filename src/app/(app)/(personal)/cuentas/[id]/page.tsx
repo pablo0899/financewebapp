@@ -72,7 +72,12 @@ async function Cuenta({ id }: { id: string }) {
         ) : (
           <ul className="divide-y divide-border">
             {transactions.map((t) => (
-              <TransactionItem key={t.id} transaction={t} accountId={account.id} detail={<p className="text-xs text-muted">{formatDay(t.occurred_on)}</p>} />
+              <TransactionItem
+                key={t.id}
+                transaction={t}
+                accountId={account.id}
+                href={`/movimientos/${t.id}?volver=${encodeURIComponent(`/cuentas/${account.id}`)}`}
+                detail={<p className="text-xs text-muted">{formatDay(t.occurred_on)}</p>} />
             ))}
           </ul>
         )}

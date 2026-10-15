@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { formatDay } from "@/lib/format";
 import type { Account } from "@/lib/supabase/database.types";
 import { deleteTransaction } from "../actions";
@@ -5,17 +6,23 @@ import type { TransactionWithCategory } from "../queries";
 import { AccountSelect } from "./AccountSelect";
 import { TransactionItem } from "./TransactionItem";
 
-/** Lista agrupada por día; en gastos e ingresos se puede cambiar la cuenta. */
+/** Lista agrupada por día; en gastos e ingresos se puede cambiar la cuenta. Tocar un movimiento lo edita. */
 export function TransactionList({
   transactions,
   accounts,
+  returnTo,
+  empty = "Sin movimientos este mes.",
 }: {
   transactions: TransactionWithCategory[];
   accounts: Pick<Account, "id" | "name" | "icon">[];
+  /** Ruta actual (con filtros), para regresar aquí después de editar. */
+  returnTo: string;
+  empty?: string;
 }) {
   if (transactions.length === 0) {
-    return <p className="py-12 text-center text-muted">Sin movimientos este mes.</p>;
+    return <p className="py-12 text-center text-muted">{empty}</p>;
   }
+  const editHref = (id: string) => `/movimientos/${id}?volver=${encodeURIComponent(returnTo)}`;
 
   const byDay = Map.groupBy(transactions, (t) => t.occurred_on);
 
@@ -29,6 +36,7 @@ export function TransactionList({
               <TransactionItem
                 key={t.id}
                 transaction={t}
+                href={editHref(t.id)}
                 detail={
                   (t.kind === "income" || t.kind === "expense") && accounts.length > 0 ? (
                     <div className="mt-1">
@@ -37,11 +45,16 @@ export function TransactionList({
                   ) : undefined
                 }
                 action={
-                  <form action={deleteTransaction.bind(null, t.id)}>
-                    <button aria-label="Borrar" className="px-1 text-muted">
-                      ✕
-                    </button>
-                  </form>
+                  <>
+                    <Link href={editHref(t.id)} aria-label="Editar" className="px-1 text-muted">
+                      ✎
+                    </Link>
+                    <form action={deleteTransaction.bind(null, t.id)}>
+                      <button aria-label="Borrar" className="px-1 text-muted">
+                        ✕
+                      </button>
+                    </form>
+                  </>
                 }
               />
             ))}
