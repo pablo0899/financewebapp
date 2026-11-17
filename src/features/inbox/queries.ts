@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { requireUser } from "@/lib/supabase/server";
+import { parseInboxItem } from "./parse";
 
 /** Entradas por confirmar, más recientes primero. */
 export const getPendingInbox = cache(async () => {
@@ -15,14 +16,10 @@ export const getPendingInbox = cache(async () => {
   return data;
 });
 
+/** Cuántas entradas pendientes parecen movimientos (sin contar alertas ni duplicados). */
 export const getPendingInboxCount = cache(async () => {
-  const { supabase } = await requireUser();
-  const { count, error } = await supabase
-    .from("inbox_items")
-    .select("id", { count: "exact", head: true })
-    .eq("status", "pending");
-  if (error) throw error;
-  return count ?? 0;
+  const items = await getPendingInbox();
+  return items.filter((item) => parseInboxItem(item).type !== "ignore").length;
 });
 
 /** Una entrada pendiente (para prellenar "Nuevo movimiento"); null si ya no está pendiente. */

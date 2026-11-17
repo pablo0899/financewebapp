@@ -25,6 +25,7 @@ export function TransactionForm({
   transaction,
   returnTo,
   inboxId,
+  prefill,
 }: {
   categories: Category[];
   accounts: Account[];
@@ -36,6 +37,8 @@ export function TransactionForm({
   returnTo?: string;
   /** Entrada de la bandeja que se está registrando. */
   inboxId?: string;
+  /** Valores sugeridos para un movimiento nuevo (ej. leídos de un correo). */
+  prefill?: { kind: Kind; amount: string; accountId: string | null; toAccountId: string | null; note: string | null };
 }) {
   const t = transaction;
   const [state, action, pending] = useActionState<FormState, FormData>(
@@ -44,13 +47,16 @@ export function TransactionForm({
   );
   // Campos controlados: React limpia los formularios tras cada envío y así no
   // se pierde lo capturado cuando el servidor regresa un error.
-  const [kind, setKind] = useState<Kind>(!t || t.kind === "adjustment" ? "expense" : t.external ? "transfer" : t.kind);
-  const [amount, setAmount] = useState(t ? String(t.amount) : "");
+  const p = t ? undefined : prefill;
+  const [kind, setKind] = useState<Kind>(
+    t ? (t.kind === "adjustment" ? "expense" : t.external ? "transfer" : t.kind) : (p?.kind ?? "expense"),
+  );
+  const [amount, setAmount] = useState(t ? String(t.amount) : (p?.amount ?? ""));
   const [categoryId, setCategoryId] = useState(t?.category_id ?? "");
-  const [accountId, setAccountId] = useState(t ? (t.account_id ?? "") : (defaultAccountId ?? ""));
-  const [toAccountId, setToAccountId] = useState(t?.external ? EXTERNAL : (t?.to_account_id ?? ""));
+  const [accountId, setAccountId] = useState(t ? (t.account_id ?? "") : (p?.accountId ?? defaultAccountId ?? ""));
+  const [toAccountId, setToAccountId] = useState(t ? (t.external ? EXTERNAL : (t.to_account_id ?? "")) : (p?.toAccountId ?? ""));
   const [date, setDate] = useState(t?.occurred_on ?? defaultDate);
-  const [note, setNote] = useState(t?.note ?? "");
+  const [note, setNote] = useState(t ? (t.note ?? "") : (p?.note ?? ""));
   const external = kind === "transfer" && toAccountId === EXTERNAL;
   // Las transferencias externas usan (opcionalmente) categorías de gasto.
   const options = categories.filter((c) => c.kind === (kind === "income" ? "income" : "expense"));

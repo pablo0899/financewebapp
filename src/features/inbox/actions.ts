@@ -25,6 +25,13 @@ export async function dismissInboxItem(id: string) {
   refresh();
 }
 
+export async function dismissInboxItems(ids: string[]) {
+  if (ids.length === 0) return;
+  const { supabase } = await requireUser();
+  await supabase.from("inbox_items").update({ status: "dismissed" }).in("id", ids.slice(0, 200)).eq("status", "pending");
+  refresh();
+}
+
 export async function dismissAllInbox() {
   const { supabase } = await requireUser();
   await supabase.from("inbox_items").update({ status: "dismissed" }).eq("status", "pending");
