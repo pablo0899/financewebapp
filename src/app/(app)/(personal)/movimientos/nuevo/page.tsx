@@ -59,6 +59,9 @@ async function Form({ searchParams }: Pick<PageProps<"/movimientos/nuevo">, "sea
         </details>
       )}
       <TransactionForm
+        // Next conserva el estado de la página al navegar entre ?bandeja=…; la
+        // key hace que cada entrada empiece con sus propios valores.
+        key={inboxItem?.id ?? "nuevo"}
         categories={categories}
         accounts={accounts}
         defaultDate={inboxItem ? toLocalDate(inboxItem.received_at) : today()}
