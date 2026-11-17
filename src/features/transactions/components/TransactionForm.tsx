@@ -24,6 +24,7 @@ export function TransactionForm({
   defaultAccountId,
   transaction,
   returnTo,
+  inboxId,
 }: {
   categories: Category[];
   accounts: Account[];
@@ -33,6 +34,8 @@ export function TransactionForm({
   transaction?: Transaction;
   /** Ruta a la que regresar después de guardar los cambios. */
   returnTo?: string;
+  /** Entrada de la bandeja que se está registrando. */
+  inboxId?: string;
 }) {
   const t = transaction;
   const [state, action, pending] = useActionState<FormState, FormData>(
@@ -64,6 +67,7 @@ export function TransactionForm({
     <form action={action} className="flex flex-col gap-4">
       <input type="hidden" name="kind" value={kind} />
       {returnTo && <input type="hidden" name="return_to" value={returnTo} />}
+      {inboxId && <input type="hidden" name="inbox_id" value={inboxId} />}
       <div className="grid grid-cols-3 gap-1 rounded-xl bg-surface p-1 text-sm">
         {(["expense", "income", "transfer"] as const).map((k) => (
           <button

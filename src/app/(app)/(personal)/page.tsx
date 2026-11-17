@@ -9,6 +9,7 @@ import { BudgetDonut } from "@/features/budgets/components/BudgetDonut";
 import { MonthSummary } from "@/features/dashboard/components/MonthSummary";
 import { RecentSpending } from "@/features/dashboard/components/RecentSpending";
 import { getMonthSummary, getRecentSpending } from "@/features/dashboard/queries";
+import { InboxBanner } from "@/features/inbox/components/InboxBanner";
 import { TransactionItem } from "@/features/transactions/components/TransactionItem";
 import { parseDays, requestMonth } from "@/lib/dates";
 import { formatMoney } from "@/lib/format";
@@ -22,6 +23,9 @@ export default function DashboardPage({ searchParams }: PageProps<"/">) {
           <button className="text-sm text-muted">Salir</button>
         </form>
       </header>
+      <Suspense>
+        <InboxBanner />
+      </Suspense>
       <Suspense fallback={<Skeleton className="h-96" />}>
         <Dashboard searchParams={searchParams} />
       </Suspense>

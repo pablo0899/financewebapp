@@ -4,6 +4,7 @@ import { MonthPicker } from "@/components/MonthPicker";
 import { Skeleton } from "@/components/Skeleton";
 import { getAccounts } from "@/features/accounts/queries";
 import { getCategories } from "@/features/categories/queries";
+import { InboxBanner } from "@/features/inbox/components/InboxBanner";
 import { TransactionList } from "@/features/transactions/components/TransactionList";
 import { getMonthTransactions, getRecentTransactions } from "@/features/transactions/queries";
 import { parseDays, requestMonth } from "@/lib/dates";
@@ -13,6 +14,9 @@ export default function MovimientosPage({ searchParams }: PageProps<"/movimiento
   return (
     <>
       <h1 className="text-2xl font-semibold">Movimientos</h1>
+      <Suspense>
+        <InboxBanner quiet />
+      </Suspense>
       <Suspense fallback={<Skeleton className="h-96" />}>
         <Movimientos searchParams={searchParams} />
       </Suspense>

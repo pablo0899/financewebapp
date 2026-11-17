@@ -16,6 +16,7 @@ teléfono como PWA ("Agregar a pantalla de inicio") y guarda los datos en Supaba
 | Nuevo movimiento | `/movimientos/nuevo` | Gasto, ingreso o transferencia (ej. pagar la tarjeta, o a una cuenta externa: cuenta como egreso). Monto, cuenta, categoría y fecha obligatorias |
 | Presupuestos | `/presupuestos` | Límite mensual fijo por categoría (lo gastado se reinicia cada mes); crear y borrar categorías |
 | Ahorro | `/ahorro` | Metas de ahorro con objetivo opcional; aportar y retirar; total ahorrado y ahorro del mes |
+| Por confirmar | `/bandeja` | Notificaciones capturadas automáticamente (MacroDroid). "Registrar" abre Nuevo movimiento con la fecha y el texto de referencia; "Descartar" la quita. Aquí se genera el token de captura |
 | Login | `/login` | Acceso con correo y contraseña (sin registro público) |
 
 Todas las vistas mensuales aceptan `?mes=YYYY-MM`.
@@ -43,6 +44,20 @@ negocio y ven todos sus socios.
    where display_name = 'Ximena';
   ```
 - Colores de las gráficas validados para daltonismo (ingresos azul / gastos naranja).
+
+### Captura automática (`/api/ingest`)
+
+- MacroDroid (Android) manda cada notificación de Google Wallet, Amex, Mercado Pago, Plata y
+  BBVA con un `POST` a `/api/ingest`, con `Authorization: Bearer <token>`. Los pasos están en
+  `/bandeja` → "Captura automática".
+- Campos (query string, JSON o formulario): `app`, `title`, `text`, y opcionales
+  `received_at` (ISO o epoch ms), `source` (`notification` | `email` | `sms`) e `id`
+  (id externo, ej. de Gmail, para no duplicar).
+- El token se genera en la app; en la BD solo se guarda su sha256 (`ingest_tokens`). La
+  función `ingest_inbox_item` es pública a propósito (el endpoint no tiene sesión) y no hace
+  nada sin un token válido.
+- Las notificaciones repetidas (mismo texto en ±10 min) y los `id` repetidos se ignoran.
+- Por ahora se guarda el texto tal cual; los parsers por app vienen después.
 
 ### Cómo se calculan los saldos
 
@@ -142,6 +157,7 @@ Abre http://localhost:3000. Para probar desde el teléfono en la misma red usa
 ## Ideas para siguientes versiones
 
 - Editar categorías
-- Movimientos recurrentes (renta, suscripciones)
+- Movimientos recurrentes (renta, suscripciones, nómina)
+- Leer monto, comercio y cuenta de cada notificación capturada; reglas de categoría por comercio
 - Gráfica de tendencia de varios meses
 - Exportar a CSV

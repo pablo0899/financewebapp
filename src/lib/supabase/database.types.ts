@@ -421,6 +421,77 @@ export type Database = {
         };
         Relationships: [];
       };
+      inbox_items: {
+        Row: {
+          app: string | null;
+          body: string | null;
+          created_at: string;
+          external_id: string | null;
+          id: string;
+          received_at: string;
+          source: string;
+          status: Database["public"]["Enums"]["inbox_status"];
+          title: string | null;
+          transaction_id: string | null;
+          user_id: string;
+        };
+        Insert: {
+          app?: string | null;
+          body?: string | null;
+          created_at?: string;
+          external_id?: string | null;
+          id?: string;
+          received_at?: string;
+          source: string;
+          status?: Database["public"]["Enums"]["inbox_status"];
+          title?: string | null;
+          transaction_id?: string | null;
+          user_id: string;
+        };
+        Update: {
+          app?: string | null;
+          body?: string | null;
+          created_at?: string;
+          external_id?: string | null;
+          id?: string;
+          received_at?: string;
+          source?: string;
+          status?: Database["public"]["Enums"]["inbox_status"];
+          title?: string | null;
+          transaction_id?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "inbox_items_transaction_id_fkey";
+            columns: ["transaction_id"];
+            isOneToOne: false;
+            referencedRelation: "transactions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ingest_tokens: {
+        Row: {
+          created_at: string;
+          last_used_at: string | null;
+          token_hash: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          last_used_at?: string | null;
+          token_hash: string;
+          user_id?: string;
+        };
+        Update: {
+          created_at?: string;
+          last_used_at?: string | null;
+          token_hash?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       savings_goals: {
         Row: {
           color: string;
@@ -558,10 +629,22 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      ingest_inbox_item: {
+        Args: {
+          p_app?: string;
+          p_body?: string;
+          p_external_id?: string;
+          p_received_at?: string;
+          p_source: string;
+          p_title?: string;
+          p_token: string;
+        };
+        Returns: string;
+      };
     };
     Enums: {
       account_kind: "debit" | "credit" | "yield";
+      inbox_status: "pending" | "confirmed" | "dismissed";
       movement_kind: "income" | "expense" | "transfer" | "adjustment";
     };
     CompositeTypes: {
@@ -584,5 +667,6 @@ export type BizChannel = Tables["biz_channels"]["Row"];
 export type BizExpenseCategory = Tables["biz_expense_categories"]["Row"];
 export type Category = Tables["categories"]["Row"];
 export type Transaction = Tables["transactions"]["Row"];
+export type InboxItem = Tables["inbox_items"]["Row"];
 export type SavingsGoal = Tables["savings_goals"]["Row"];
 export type SavingsMovement = Tables["savings_movements"]["Row"];

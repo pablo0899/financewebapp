@@ -6,8 +6,9 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Todo excepto assets estáticos, íconos y el manifest de la PWA.
+  // Todo excepto assets estáticos, íconos, el manifest de la PWA y /api/ingest
+  // (se autentica con su propio token, no con la sesión).
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|icon|apple-icon|manifest.webmanifest|.*\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!api/ingest|_next/static|_next/image|favicon.ico|icon|apple-icon|manifest.webmanifest|.*\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

@@ -63,9 +63,16 @@ export async function createTransaction(_prev: FormState, formData: FormData): P
   if ("error" in result) return result;
   const { fields } = result;
 
+  // Si viene de la bandeja, la entrada queda ligada al movimiento.
+  const inboxId = String(formData.get("inbox_id") ?? "");
+
   const { supabase } = await requireUser();
-  const { error } = await supabase.from("transactions").insert(fields);
+  const { data, error } = await supabase.from("transactions").insert(fields).select("id").single();
   if (error) return { error: "No se pudo guardar. Intenta de nuevo." };
+  if (inboxId) {
+    await confirmInboxItem(supabase, inboxId, data.id);
+    redirect("/bandeja");
+  }
 
   if (fields.kind === "transfer") {
     // El pago desde la pantalla de una tarjeta regresa a esa misma pantalla.
@@ -95,6 +102,18 @@ export async function updateTransaction(id: string, _prev: FormState, formData: 
   if (error || data.length === 0) return { error: "No se pudo guardar. Intenta de nuevo." };
 
   redirect(safePath(String(formData.get("return_to") ?? ""), `/movimientos?mes=${fields.occurred_on.slice(0, 7)}`));
+}
+
+async function confirmInboxItem(
+  supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],
+  inboxId: string,
+  transactionId: string,
+) {
+  await supabase
+    .from("inbox_items")
+    .update({ status: "confirmed", transaction_id: transactionId })
+    .eq("id", inboxId)
+    .eq("status", "pending");
 }
 
 /** Cambia la cuenta de un gasto o ingreso (vacío = sin cuenta). */
