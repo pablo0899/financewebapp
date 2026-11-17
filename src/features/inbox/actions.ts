@@ -25,6 +25,20 @@ export async function dismissInboxItem(id: string) {
   refresh();
 }
 
+/** "Ya lo registré": liga la entrada a un movimiento existente en vez de crear otro. */
+export async function linkInboxItem(inboxId: string, transactionId: string) {
+  const { supabase } = await requireUser();
+  // RLS: solo encuentra el movimiento si es del usuario.
+  const { data: transaction } = await supabase.from("transactions").select("id").eq("id", transactionId).maybeSingle();
+  if (!transaction) return;
+  await supabase
+    .from("inbox_items")
+    .update({ status: "confirmed", transaction_id: transaction.id })
+    .eq("id", inboxId)
+    .eq("status", "pending");
+  refresh();
+}
+
 export async function dismissInboxItems(ids: string[]) {
   if (ids.length === 0) return;
   const { supabase } = await requireUser();
